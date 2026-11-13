@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Config Import</title>
+<style>
+:root{
+--bg:#f4f5f7;--panel:#fff;--input:#fff;--code-bg:#f1f2f5;--text:#1f2329;--muted:#6b7280;
+--border:#e4e6ea;--border1:#cbd0d7;--accent:#2f6fed;--accent-soft:#e9f0fe;--ok:#1a7f4b;
+--warn:#a96500;--warn-bg:#fff6e6;--chip:#f0f1f4;--hover:#f7f8fa;--danger:#c0392b
+}
+[data-theme=dark]{
+--bg:#16181d;--panel:#1d2026;--input:#242830;--code-bg:#242830;--text:#e6e8eb;--muted:#9aa1ab;
+--border:#2c3038;--border1:#3b414b;--accent:#5b8cf7;--accent-soft:#20283a;--ok:#4ec98a;
+--warn:#e0a94a;--warn-bg:#392e1c;--chip:#242830;--hover:#23272e;--danger:#f07a6a
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
+.app{display:flex;flex-direction:column;gap:12px;padding:16px;max-width:1180px;margin:0 auto}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head h1{margin:0;font-size:17px;font-weight:600}
+.head p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;padding:6px 12px;border-radius:6px;border:1px solid var(--border1);
+background:var(--panel);color:var(--text);cursor:pointer;white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--hover)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){filter:brightness(1.06)}
+.btn.ghost{background:transparent;border-color:var(--border1)}
+.overwrite{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;cursor:pointer;
+padding:5px 9px;border:1px solid var(--border);border-radius:6px;background:var(--panel)}
+.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.source{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:11px 13px}
+.source[data-state=error],.source[data-state=missing]{border-color:var(--border1);background:var(--warn-bg)}
+.source-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.source-name{font-weight:600}
+.badge{font-size:11.5px;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.badge[data-kind=ok]{background:var(--accent-soft);color:var(--accent)}
+.badge[data-kind=off]{background:var(--chip);color:var(--muted)}
+.badge[data-kind=warn]{background:transparent;border:1px solid var(--border1);color:var(--warn)}
+.source-count{margin-left:auto;color:var(--muted);font-size:12.5px}
+.source-path{margin-top:6px;display:flex;gap:6px;align-items:baseline;min-width:0}
+.source-path .k{color:var(--muted);font-size:12px;flex:0 0 auto}
+.source-path code{font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--code-bg);
+padding:1px 6px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.source-note{margin-top:6px;font-size:12.5px;color:var(--warn);word-break:break-word}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.selection{color:var(--muted);font-size:12.5px;margin-left:2px}
+.selection[data-kind=warn]{color:var(--warn)}
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filters-label{color:var(--muted);font-size:12.5px;flex:0 0 auto}
+.filters-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{font:inherit;font-size:12.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--border1);
+background:var(--panel);color:var(--text);cursor:pointer;white-space:nowrap}
+.chip:hover:not(:disabled){background:var(--hover)}
+.chip:disabled{opacity:.5;cursor:not-allowed}
+.chip[data-on="1"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip[data-empty="1"]{color:var(--muted);border-style:dashed}
+.chip-count{margin-left:6px;font-size:11.5px;color:var(--muted)}
+.chip[data-on="1"] .chip-count{color:var(--accent)}
+.visible{color:var(--muted);font-size:12.5px;margin-left:auto}
+.pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:sticky;bottom:0;
+background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12.5px}
+.page-info{color:var(--text)}
+.page-total,.pager-selected{color:var(--muted)}
+.page-size{display:flex;align-items:center;gap:6px;color:var(--muted);margin-left:auto}
+.page-size select{font:inherit;font-size:12.5px;padding:3px 6px;border-radius:6px;border:1px solid var(--border1);
+background:var(--input);color:var(--text)}
+.banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--border1);
+background:var(--warn-bg);color:var(--text);border-radius:8px;padding:9px 12px;font-size:12.5px;
+word-break:break-word}
+.banner .banner-text{flex:1 1 240px}
+.list{border:1px solid var(--border);border-radius:8px;background:var(--panel);overflow:hidden}
+table.list{border-collapse:collapse;width:100%;table-layout:fixed}
+table.list th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:8px 10px;
+border-bottom:1px solid var(--border);background:var(--hover)}
+table.list td{padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.list col.c-check{width:38px}
+table.list col.c-name{width:20%}
+table.list col.c-source{width:11%}
+table.list col.c-format{width:13%}
+table.list col.c-url{width:25%}
+table.list col.c-models{width:11%}
+table.list col.c-flags{width:18%}
+table.list td.cell-flags{white-space:normal}
+table.list tr:last-child td{border-bottom:0}
+table.list tr[data-conflict="1"]{background:var(--warn-bg)}
+.cell-check{width:36px}
+.cell-check input{margin:0;vertical-align:middle}
+.cell-name .name{font-weight:500}
+.cell-name .kind{margin-left:6px;font-size:11px;color:var(--muted);background:var(--chip);
+padding:0 6px;border-radius:999px}
+.cell-url code{font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted)}
+.flag{display:inline-block;font-size:11.5px;padding:1px 6px;border-radius:4px;margin-right:4px;
+background:var(--chip);color:var(--muted);white-space:nowrap}
+.flag[data-kind=warn]{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.flag[data-kind=info]{background:var(--accent-soft);color:var(--accent)}
+.empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:13px}
+.result{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:12px 14px}
+.result h2{margin:0 0 4px;font-size:14px;font-weight:600}
+.result .summary{margin:0;font-size:13px}
+.result .resolved{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.res-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.res-row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;border-top:1px solid var(--border);
+padding-top:6px;font-size:12.5px}
+.res-name{font-weight:500;min-width:120px}
+.res-status{font-size:11.5px;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.res-row[data-status=imported] .res-status{background:var(--accent-soft);color:var(--ok)}
+.res-row[data-status=skipped] .res-status{background:var(--chip);color:var(--warn)}
+.res-row[data-status=failed] .res-status{background:transparent;border:1px solid var(--border1);color:var(--danger)}
+.res-reason{flex:1 1 260px;color:var(--muted);word-break:break-word}
+.res-id{color:var(--muted);font:11.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <div>
+      <h1 id="app-title"></h1>
+      <p id="app-sub"></p>
+    </div>
+    <div class="actions">
+      <label class="overwrite"><input id="overwrite" type="checkbox"><span id="overwrite-label"></span></label>
+      <button id="rescan" class="btn" type="button"></button>
+      <button id="import" class="btn primary" type="button"></button>
+    </div>
+  </header>
+  <section id="sources" class="sources"></section>
+  <div id="banner" class="banner" hidden></div>
+  <div class="filters">
+    <span id="filters-label" class="filters-label"></span>
+    <div id="filters" class="filters-chips"></div>
+  </div>
+  <section class="toolbar">
+    <button id="select-all" class="btn ghost" type="button"></button>
+    <button id="invert" class="btn ghost" type="button"></button>
+    <button id="clear-selection" class="btn ghost" type="button"></button>
+    <span id="selection" class="selection"></span>
+    <span id="visible" class="visible"></span>
+  </section>
+  <main id="list" class="list"></main>
+  <section id="pager" class="pager" hidden>
+    <button id="page-first" class="btn ghost" type="button"></button>
+    <button id="page-prev" class="btn ghost" type="button"></button>
+    <span id="page-info" class="page-info"></span>
+    <button id="page-next" class="btn ghost" type="button"></button>
+    <button id="page-last" class="btn ghost" type="button"></button>
+    <span id="page-total" class="page-total"></span>
+    <span id="pager-selected" class="pager-selected"></span>
+    <label class="page-size"><span id="page-size-label"></span><select id="page-size"></select></label>
+  </section>
+  <section id="result" class="result" hidden></section>
+</div>
+<script>
+// GoNavi AI 配置导入的插件页。宿主把它放进不透明源沙箱，只注入 window.gonavi 这一个桥：
+// call('plugin.invoke', {command, arguments}) → 插件后端命令结果。
+// 因此本页不发网络请求、不碰存储、不加载外部资源、不用 WebCrypto，全部逻辑在页面内。
+(function () {
+  'use strict';
+
+  var SOURCE_ORDER = ['cc-switch', 'magpie', 'ccgui', 'opencode', 'mimocode'];
+  // 每页条数档位：100 要能一页装下（导入上限是 100 条），200 只用于大列表浏览。
+  var PER_PAGE_OPTIONS = [20, 50, 100, 200];
+  var PER_PAGE_DEFAULT = 50;
+  // 契约规定单次最多 100 条，超出的勾选在页面上直接拦住，避免后端整批拒绝。
+  var MAX_IMPORT = 100;
+  var KEY_SEP = '\u0000';
+
+  var TEXT = {
+    zh: {
+      title: 'AI 配置导入',
+      subtitle: '扫描本机的 cc switch / Magpie / ccgui / opencode / mimocode，勾选后写入 GoNavi 的 AI 供应商列表。',
+      rescan: '重新扫描',
+      scanning: '正在扫描…',
+      import: '导入所选',
+      importing: '正在导入…',
+      selectAll: '全选',
+      invert: '反选',
+      overwrite: '同名冲突时覆盖已有供应商',
+      selected: '已选 {n} 条（跨页合计）',
+      selectedNone: '还没有勾选条目，先勾选要导入的供应商。',
+      selectedTooMany: '一次最多导入 {max} 条，当前已选 {n} 条，请取消多余勾选。',
+      detected: '已检测到',
+      notDetected: '未检测到',
+      readFailed: '读取失败',
+      count: '{n} 条',
+      pathLabel: '路径',
+      sourceMissing: '宿主没有返回这个来源的扫描结果。',
+      sourceError: '读取失败：{msg}',
+      keyUnavailable: '密钥需手工补填：该来源只暴露了掩码密钥（已退回只读元数据）。',
+      // 上游停用与结构不支持是两回事：前者用户自己在上游开关一下就能导入，后者才是插件能力缺口。
+      disabledNote: '已停用 {n} 条（在源工具里关闭，启用后即可导入）',
+      skippedNote: '已跳过 {n} 条：源里没有可用的 http 端点、结构暂不支持，或与其它条目重复',
+      emptyAll: '未检测到任何支持的配置文件，没有可导入的供应商。',
+      emptyItems: '已检测到配置文件，但里面没有可导入的供应商。',
+      ignored: '已忽略 {n} 条缺少唯一标识的条目。',
+      conflictUnavailable: '未能读取宿主已有的供应商列表，本次没有标记「冲突」——没标不代表一定不重复。',
+      filterLabel: '按软件筛选：',
+      filterAll: '全部',
+      clearFilterTip: '显示全部来源。',
+      filterTip: '只看这个来源；可多选，多个来源取并集。',
+      visibleCount: '可见 {visible} / 共 {total} 条',
+      emptyFiltered: '当前筛选下没有条目。',
+      emptyAllSome: '未检测到 {list} 的配置文件，没有可导入的供应商。',
+      selectAllCount: '全选（筛选后 {n} 条）',
+      selectAllTip: '只作用于筛选后的条目，包含其它页，不只当前页。',
+      invertTip: '只作用于筛选后的条目，包含其它页，不只当前页。',
+      clearSelection: '取消全选',
+      clearSelectionTip: '清空全部勾选（含其它页与其它来源）。',
+      pageFirst: '首页', pagePrev: '上一页', pageNext: '下一页', pageLast: '末页',
+      pageInfo: '第 {page} / {pages} 页',
+      pageTotal: '共 {n} 条',
+      pagerSelected: '已勾选 {n} 条（跨页合计）',
+      pageSize: '每页',
+      colName: '名称', colSource: '来源', colFormat: '接口格式', colUrl: '地址', colModels: '模型', colFlags: '标记',
+      modelsCount: '{n} 个模型', modelsNone: '未声明',
+      flagConflict: '冲突', flagNoKey: '密钥需手工补填', flagCurrent: '当前使用中',
+      flagConflictTip: '已有同名同地址的供应商；不勾选覆盖时会被跳过。',
+      flagNoKeyTip: '这条来源配置里没有密钥，导入后需要手工补填。',
+      scanFailed: '扫描失败：{msg}',
+      importFailed: '导入失败：{msg}',
+      retry: '重试',
+      bridgeMissing: '宿主桥不可用：请从 GoNavi 的插件菜单打开本页，不能直接用浏览器打开文件。',
+      badShape: '宿主返回的数据不符合接口契约。',
+      resultTitle: '导入结果',
+      summary: '成功 {imported} 条，跳过 {skipped} 条，失败 {failed} 条。',
+      resolved: '其中 {resolved} 条取到了完整配置。',
+      statusImported: '已导入', statusSkipped: '已跳过', statusFailed: '失败',
+      providerId: '供应商 ID：{id}',
+      nameUnavailable: '（名称不可用）',
+      reasonUnspecified: '宿主没有给出这一条的原因。',
+      resUnaligned: '其中 {n} 条结果没有带回供应商名称（来源里已找不到配置的条目），无法确定对应的是哪一条；上方汇总计数仍然准确。',
+      resCountMismatch: '本次提交 {submitted} 条，宿主只返回了 {returned} 条结果。',
+      notifyDone: '导入完成：成功 {imported} 条，跳过 {skipped} 条，失败 {failed} 条。',
+      reasonDuplicate: '已存在同名同地址的供应商，本次没有覆盖。',
+      reasonInvalidName: '供应商名称去掉首尾空格后为空或超过 128 个字符。',
+      reasonBaseUrl: '供应商地址不是合法的 http/https 链接。',
+      reasonApiFormat: '接口格式不在支持范围（openai、openai-responses、anthropic、gemini）。',
+      reasonApiKey: '供应商密钥长度超出宿主上限（4096 个字符）。',
+      reasonTooManyHeaders: '这条供应商的自定义请求头超过宿主上限（16 组），没有导入——静默丢掉请求头会做出一条看起来正常、实际调不通的供应商。',
+      reasonSaveFailed: '宿主保存这条供应商时失败了。',
+      reasonInternal: '宿主内部错误。',
+      reasonSourceMissing: '来源里已经找不到这条配置，可能已被改动或删除。',
+      reasonSourceReadFailed: '读取这条来源配置失败（文件损坏、被占用或权限不足），不是配置被删除。',
+      reasonUnknown: '未识别的原因：{code}',
+      hostErrorInvalidArguments: '宿主认为参数不合法。',
+      hostErrorPermissionDenied: '宿主没有授予写入 AI 供应商的权限。',
+      hostErrorTooManyProviders: '一次提交的供应商超过了宿主上限。',
+      hostErrorInternal: '宿主内部错误。',
+      hostErrorUnknownMethod: '这个 GoNavi 没有「导入 AI 供应商」能力（ai.providers.import），当前版本不支持导入。请升级 GoNavi 到包含该能力的版本后重试；扫描结果不受影响。'
+    },
+    en: {
+      title: 'Import AI providers',
+      subtitle: 'Scan local cc switch, Magpie, ccgui, opencode and mimocode entries, then write the selected ones into GoNavi AI providers.',
+      rescan: 'Rescan',
+      scanning: 'Scanning…',
+      import: 'Import selected',
+      importing: 'Importing…',
+      selectAll: 'Select all',
+      invert: 'Invert',
+      overwrite: 'Overwrite providers with the same name and URL',
+      selected: '{n} selected (across pages)',
+      selectedNone: 'Nothing is selected yet. Tick the providers you want to import.',
+      selectedTooMany: 'At most {max} entries per import; {n} are selected, please untick the extras.',
+      detected: 'Detected',
+      notDetected: 'Not detected',
+      readFailed: 'Read failed',
+      count: '{n} entries',
+      pathLabel: 'Path',
+      sourceMissing: 'The host returned no scan result for this source.',
+      sourceError: 'Read failed: {msg}',
+      keyUnavailable: 'API key must be filled in manually: this source exposes only a masked key (read-only metadata fallback).',
+      disabledNote: '{n} entries are disabled upstream (turned off in the source tool); enable them there to import.',
+      skippedNote: '{n} entries were skipped: the source has no usable http endpoint, the shape is not supported yet, or the entry duplicates another.',
+      emptyAll: 'None of the supported config files was found, so there is nothing to import.',
+      emptyItems: 'A config file was found, but it holds no importable provider.',
+      ignored: 'Ignored {n} entries without a unique identifier.',
+      conflictUnavailable: 'Could not read the host existing providers, so "conflict" was not marked this time — no mark does not mean no duplicate.',
+      filterLabel: 'Filter by source:',
+      filterAll: 'All',
+      clearFilterTip: 'Show every source.',
+      filterTip: 'Show only this source; tick several to union them.',
+      visibleCount: 'Showing {visible} of {total}',
+      emptyFiltered: 'No entry matches the current filter.',
+      emptyAllSome: 'No config file found for {list}, so there is nothing to import.',
+      selectAllCount: 'Select all ({n} filtered)',
+      selectAllTip: 'Applies to the filtered entries, including other pages, not just this page.',
+      invertTip: 'Applies to the filtered entries, including other pages, not just this page.',
+      clearSelection: 'Clear selection',
+      clearSelectionTip: 'Clears every ticked entry, including other pages and sources.',
+      pageFirst: 'First', pagePrev: 'Previous', pageNext: 'Next', pageLast: 'Last',
+      pageInfo: 'Page {page} / {pages}',
+      pageTotal: '{n} total',
+      pagerSelected: '{n} selected (across pages)',
+      pageSize: 'Per page',
+      colName: 'Name', colSource: 'Source', colFormat: 'API format', colUrl: 'Base URL', colModels: 'Models', colFlags: 'Flags',
+      modelsCount: '{n} models', modelsNone: 'none declared',
+      flagConflict: 'Conflict', flagNoKey: 'Key needed', flagCurrent: 'In use',
+      flagConflictTip: 'A provider with the same name and URL already exists; it is skipped unless overwrite is on.',
+      flagNoKeyTip: 'The source entry carries no API key, so it must be filled in after import.',
+      scanFailed: 'Scan failed: {msg}',
+      importFailed: 'Import failed: {msg}',
+      retry: 'Retry',
+      bridgeMissing: 'Host bridge unavailable: open this page from the GoNavi plugin menu, not as a local file.',
+      badShape: 'The host returned data that does not match the interface contract.',
+      resultTitle: 'Import result',
+      summary: 'Imported {imported}, skipped {skipped}, failed {failed}.',
+      resolved: 'Of those, {resolved} resolved a full config.',
+      statusImported: 'Imported', statusSkipped: 'Skipped', statusFailed: 'Failed',
+      providerId: 'Provider ID: {id}',
+      nameUnavailable: '(name unavailable)',
+      reasonUnspecified: 'The host gave no reason for this entry.',
+      resUnaligned: '{n} results came back without a provider name (entries the source no longer holds), so they cannot be matched to a specific entry. The summary counts above stay accurate.',
+      resCountMismatch: '{submitted} entries were submitted but the host returned {returned} results.',
+      notifyDone: 'Import finished: {imported} imported, {skipped} skipped, {failed} failed.',
+      reasonDuplicate: 'A provider with the same name and base URL already exists and was not overwritten.',
+      reasonInvalidName: 'The provider name is empty after trimming or longer than 128 characters.',
+      reasonBaseUrl: 'The provider base URL is not a valid http/https URL.',
+      reasonApiFormat: 'The API format is unsupported (openai, openai-responses, anthropic, gemini).',
+      reasonApiKey: 'The provider credential exceeds the host limit (4096 characters).',
+      reasonTooManyHeaders: 'This provider carries more than the host limit of 16 custom headers, so it was not imported — dropping headers silently would produce a provider that looks fine but cannot authenticate.',
+      reasonSaveFailed: 'The host failed to save this provider.',
+      reasonInternal: 'Internal host error.',
+      reasonSourceMissing: 'The source no longer contains this entry; it may have been edited or removed.',
+      reasonSourceReadFailed: 'Reading this source entry failed (corrupt file, locked, or permission denied); the entry was not removed.',
+      reasonUnknown: 'Unrecognised reason: {code}',
+      hostErrorInvalidArguments: 'The host rejected the arguments.',
+      hostErrorPermissionDenied: 'The host did not grant permission to write AI providers.',
+      hostErrorTooManyProviders: 'The submission exceeded the host provider limit.',
+      hostErrorInternal: 'Internal host error.',
+      hostErrorUnknownMethod: 'This GoNavi has no "import AI providers" capability (ai.providers.import), so importing is unavailable in this build. Upgrade GoNavi to a build that includes it and retry; scanning is unaffected.'
+    }
+  };
+
+  var state = {
+    locale: 'zh',
+    theme: 'light',
+    phase: 'loading',
+    sources: [],
+    items: [],
+    ignored: 0,
+    conflictUnavailable: false,
+    selected: {},
+    // filter 只登记被选中的来源，空对象 = 全部可见；分页在筛选结果上再切片。
+    filter: {},
+    page: 1,
+    perPage: PER_PAGE_DEFAULT,
+    overwrite: false,
+    importing: false,
+    error: '',
+    importError: '',
+    result: null
+  };
+
+  function t(key, params) {
+    var table = TEXT[state.locale] || TEXT.zh;
+    var text = table[key];
+    if (text === undefined) text = TEXT.zh[key];
+    if (text === undefined) return key;
+    if (params) {
+      Object.keys(params).forEach(function (name) {
+        text = text.split('{' + name + '}').join(String(params[name]));
+      });
+    }
+    return text;
+  }
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function on(id, type, handler) {
+    var node = byId(id);
+    if (node && node.addEventListener) node.addEventListener(type, handler);
+  }
+
+  function clear(node) {
+    if (!node) return;
+    if (typeof node.replaceChildren === 'function') node.replaceChildren();
+    else node.textContent = '';
+  }
+
+  function itemKey(item) {
+    return item.sourceId + KEY_SEP + item.sourceKey;
+  }
+
+  function describeError(error) {
+    var text = '';
+    if (error && typeof error.message === 'string') text = error.message;
+    else if (typeof error === 'string') text = error;
+    else if (error) text = String(error);
+    text = text.replace(/\s+/g, ' ').trim();
+    if (!text) return t('badShape');
+    return text.length > 300 ? text.slice(0, 300) + '…' : text;
+  }
+
+  // 宿主失败时回统一信封 {ok:false,error:{code}}；code 枚举见接口契约。
+  function errorCodeOf(value) {
+    if (!value || typeof value !== 'object') return '';
+    if (value.ok !== false) return '';
+    var error = value.error;
+    if (!error || typeof error !== 'object') return 'internal';
+    return typeof error.code === 'string' && error.code ? error.code : 'internal';
+  }
+
+  function hostErrorText(code) {
+    var keys = {
+      invalid_arguments: 'hostErrorInvalidArguments',
+      permission_denied: 'hostErrorPermissionDenied',
+      too_many_providers: 'hostErrorTooManyProviders',
+      internal: 'hostErrorInternal',
+      // 旧宿主没有注册 ai.providers.import 时返回它；这条必须能归因到「宿主版本不支持」，
+      // 否则用户看到「未识别的原因：unknown_method」，只会以为插件坏了。
+      unknown_method: 'hostErrorUnknownMethod'
+    };
+    var key = keys[code];
+    return key ? t(key) : t('reasonUnknown', { code: code });
+  }
+
+  // 页面桥是主路径；窗口形态的桥作为兼容分支，两者都走同一个 plugin.invoke 能力。
+  function hostCall(command, args) {
+    var page = window.gonavi;
+    if (page && typeof page.call === 'function') {
+      return Promise.resolve(page.call('plugin.invoke', { command: command, arguments: args || {} }));
+    }
+    var win = window.gonaviPlugin;
+    if (win && typeof win.invoke === 'function') {
+      return Promise.resolve(win.ready).then(function () { return win.invoke(command, args || {}); });
+    }
+    return Promise.reject(new Error(t('bridgeMissing')));
+  }
+
+  function notifyHost(message, type) {
+    try {
+      var page = window.gonavi;
+      if (page && typeof page.notify === 'function') page.notify(message, type || 'info');
+    } catch (error) {
+      return;
+    }
+  }
+
+  function applyPalette(palette) {
+    if (!palette || typeof palette !== 'object') return;
+    var root = document.documentElement;
+    if (!root || !root.style || typeof root.style.setProperty !== 'function') return;
+    var map = {
+      bg: '--bg', panel: '--panel', input: '--input', code: '--code-bg', text: '--text', muted: '--muted',
+      border: '--border', border1: '--border1', accent: '--accent', accentSoft: '--accent-soft',
+      ok: '--ok', warn: '--warn', warnBg: '--warn-bg', chip: '--chip', hover: '--hover'
+    };
+    Object.keys(map).forEach(function (name) {
+      var value = palette[name];
+      if (typeof value === 'string' && value) root.style.setProperty(map[name], value);
+    });
+  }
+
+  function readPrefs() {
+    var prefs = window.gonaviHostPrefs;
+    if (!prefs || typeof prefs !== 'object') return;
+    if (prefs.theme === 'dark' || prefs.theme === 'light') state.theme = prefs.theme;
+    if (typeof prefs.locale === 'string' && prefs.locale) {
+      state.locale = prefs.locale.indexOf('zh') === 0 ? 'zh' : 'en';
+      if (document.documentElement && document.documentElement.setAttribute) {
+        document.documentElement.setAttribute('lang', state.locale === 'zh' ? 'zh-CN' : 'en-US');
+      }
+    }
+    applyPalette(prefs.palette);
+  }
+
+  function sourceLabel(id) {
+    if (id === 'cc-switch') return 'CC Switch';
+    if (id === 'magpie') return 'Magpie';
+    if (id === 'ccgui') return 'ccgui';
+    if (id === 'opencode') return 'opencode';
+    if (id === 'mimocode') return 'mimocode';
+    return id;
+  }
+
+  function normalizeSource(raw) {
+    var source = raw && typeof raw === 'object' ? raw : {};
+    return {
+      id: typeof source.id === 'string' && source.id ? source.id : '',
+      label: typeof source.label === 'string' && source.label ? source.label : sourceLabel(source.id),
+      detected: source.detected === true,
+      path: typeof source.path === 'string' ? source.path : '',
+      count: typeof source.count === 'number' ? source.count : 0,
+      error: typeof source.error === 'string' ? source.error : '',
+      keyUnavailable: source.keyUnavailable === true,
+      skipped: countOf(source.skipped),
+      disabled: countOf(source.disabled),
+      notice: typeof source.notice === 'string' ? source.notice : '',
+      missing: false
+    };
+  }
+
+  function normalizeItem(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var sourceId = typeof raw.sourceId === 'string' ? raw.sourceId : '';
+    var sourceKey = typeof raw.sourceKey === 'string' ? raw.sourceKey : '';
+    if (!sourceId || !sourceKey) return null;
+    var models = [];
+    if (Array.isArray(raw.models)) {
+      raw.models.forEach(function (value) {
+        if (typeof value === 'string' && value) models.push(value);
+      });
+    }
+    return {
+      sourceId: sourceId,
+      sourceKey: sourceKey,
+      name: typeof raw.name === 'string' && raw.name ? raw.name : sourceKey,
+      baseUrl: typeof raw.baseUrl === 'string' ? raw.baseUrl : '',
+      apiFormat: typeof raw.apiFormat === 'string' ? raw.apiFormat : '',
+      model: typeof raw.model === 'string' ? raw.model : '',
+      models: models,
+      hasKey: raw.hasKey === true,
+      appType: typeof raw.appType === 'string' ? raw.appType : '',
+      current: raw.current === true,
+      conflict: raw.conflict === true
+    };
+  }
+
+  function normalizeScan(value) {
+    var code = errorCodeOf(value);
+    if (code) throw new Error(hostErrorText(code));
+    if (!value || typeof value !== 'object') throw new Error(t('badShape'));
+    var hasSources = Array.isArray(value.sources);
+    var hasItems = Array.isArray(value.items);
+    if (!hasSources && !hasItems) throw new Error(t('badShape'));
+    var sources = [];
+    if (hasSources) sources = value.sources.map(normalizeSource);
+    SOURCE_ORDER.forEach(function (id) {
+      var found = false;
+      sources.forEach(function (source) { if (source.id === id) found = true; });
+      if (!found) {
+        sources.push({ id: id, label: sourceLabel(id), detected: false, path: '', count: 0, error: '', keyUnavailable: false, skipped: 0, disabled: 0, notice: '', missing: true });
+      }
+    });
+    var seen = {};
+    var items = [];
+    var ignored = 0;
+    (hasItems ? value.items : []).forEach(function (raw) {
+      var item = normalizeItem(raw);
+      if (!item) { ignored += 1; return; }
+      var key = itemKey(item);
+      if (seen[key]) { ignored += 1; return; }
+      seen[key] = true;
+      items.push(item);
+    });
+    return { sources: sources, items: items, ignored: ignored, conflictUnavailable: value.conflictUnavailable === true };
+  }
+
+  function normalizeImportResult(value, picked) {
+    var code = errorCodeOf(value);
+    if (code) throw new Error(hostErrorText(code));
+    if (!value || typeof value !== 'object') throw new Error(t('badShape'));
+    if (typeof value.imported !== 'number' || typeof value.skipped !== 'number' || typeof value.failed !== 'number') {
+      throw new Error(t('badShape'));
+    }
+    var rawItems = Array.isArray(value.items) ? value.items : [];
+    var rows = [];
+    var unnamed = 0;
+    // 每条结果只按它自己带回来的内容展示：名称只信宿主给的 name。
+    // 后端的 index 会跳过「来源里已找不到配置」的条目（用 -1 占位），拿它反查本次勾选列表
+    // 会把后面的条目整体错位一格，名称直接张冠李戴——所以这里不拿 index 认名字。
+    rawItems.forEach(function (raw) {
+      if (!raw || typeof raw !== 'object') return;
+      var name = typeof raw.name === 'string' ? raw.name.trim() : '';
+      if (!name) unnamed += 1;
+      rows.push({
+        name: name || t('nameUnavailable'),
+        status: raw.status === 'imported' || raw.status === 'skipped' || raw.status === 'failed' ? raw.status : 'failed',
+        reason: typeof raw.reason === 'string' ? raw.reason : '',
+        providerId: typeof raw.providerId === 'string' ? raw.providerId : ''
+      });
+    });
+    return {
+      imported: value.imported,
+      skipped: value.skipped,
+      failed: value.failed,
+      resolved: typeof value.resolved === 'number' ? value.resolved : null,
+      unnamed: unnamed,
+      submitted: picked.length,
+      rows: rows
+    };
+  }
+
+  function reasonText(reason) {
+    var keys = {
+      duplicate: 'reasonDuplicate',
+      invalid_name: 'reasonInvalidName',
+      invalid_base_url: 'reasonBaseUrl',
+      invalid_api_format: 'reasonApiFormat',
+      invalid_api_key: 'reasonApiKey',
+      too_many_headers: 'reasonTooManyHeaders',
+      save_failed: 'reasonSaveFailed',
+      internal: 'reasonInternal',
+      source_missing: 'reasonSourceMissing',
+      source_read_failed: 'reasonSourceReadFailed'
+    };
+    if (!reason) return '';
+    var key = keys[reason];
+    return key ? t(key) : t('reasonUnknown', { code: reason });
+  }
+
+  // 计数只认正数：旧宿主可能整段字段都不回，也可能回负数或非数字，一律按 0 处理。
+  function countOf(value) {
+    return typeof value === 'number' && isFinite(value) && value > 0 ? Math.floor(value) : 0;
+  }
+
+  function joinList(labels) {
+    if (labels.length <= 1) return labels[0] || '';
+    var head = labels.slice(0, labels.length - 1).join(state.locale === 'zh' ? '、' : ', ');
+    return state.locale === 'zh' ? head + ' 与 ' + labels[labels.length - 1] : head + ' and ' + labels[labels.length - 1];
+  }
+
+  function selectedItems() {
+    return state.items.filter(function (item) { return state.selected[itemKey(item)] === true; });
+  }
+
+  function filterIds() {
+    return Object.keys(state.filter).filter(function (id) { return state.filter[id] === true; });
+  }
+
+  function filterActive() { return filterIds().length > 0; }
+
+  // 可见 = 筛选后的全部条目（跨页）。筛选与翻页只改变渲染哪些行，不碰勾选集合。
+  function visibleItems() {
+    if (!filterActive()) return state.items;
+    return state.items.filter(function (item) { return state.filter[item.sourceId] === true; });
+  }
+
+  function sourceItemCount(sourceId) {
+    var total = 0;
+    state.items.forEach(function (item) { if (item.sourceId === sourceId) total += 1; });
+    return total;
+  }
+
+  // 每次取页面前都把当前页夹进有效范围：数据变少时落到最后一页，绝不渲染空白页。
+  function pageModel() {
+    var visible = visibleItems();
+    var pages = Math.max(1, Math.ceil(visible.length / state.perPage));
+    if (state.page > pages) state.page = pages;
+    if (state.page < 1) state.page = 1;
+    var start = (state.page - 1) * state.perPage;
+    return { visible: visible, pages: pages, rows: visible.slice(start, start + state.perPage) };
+  }
+
+  // 全选与反选都只遍历筛选后的条目，筛选之外的勾选原样保留。
+  function applyToVisible(handler) {
+    visibleItems().forEach(function (item) { handler(itemKey(item)); });
+  }
+
+  // 重扫后来源清单可能变短：摘掉已经不在本次结果里的筛选条件，其余筛选与当前页保留。
+  function pruneFilter() {
+    var known = {};
+    state.sources.forEach(function (source) { known[source.id] = true; });
+    filterIds().forEach(function (id) { if (!known[id]) delete state.filter[id]; });
+  }
+
+  function statusLabel(status) {
+    if (status === 'imported') return t('statusImported');
+    if (status === 'skipped') return t('statusSkipped');
+    return t('statusFailed');
+  }
+
+  function renderChrome() {
+    if (document.documentElement && document.documentElement.setAttribute) {
+      document.documentElement.setAttribute('data-theme', state.theme);
+    }
+    document.title = t('title');
+    setText('app-title', t('title'));
+    setText('app-sub', t('subtitle'));
+    setText('overwrite-label', t('overwrite'));
+    var rescan = byId('rescan');
+    if (rescan) {
+      rescan.textContent = state.phase === 'loading' ? t('scanning') : t('rescan');
+      rescan.disabled = state.phase === 'loading' || state.importing;
+    }
+    var count = selectedItems().length;
+    var importButton = byId('import');
+    if (importButton) {
+      importButton.textContent = state.importing ? t('importing') : t('import') + ' (' + count + ')';
+      importButton.disabled = state.importing || state.phase !== 'ready' || count < 1 || count > MAX_IMPORT;
+    }
+    var visible = visibleItems().length;
+    setText('filters-label', t('filterLabel'));
+    setText('visible', state.phase === 'ready' ? t('visibleCount', { visible: visible, total: state.items.length }) : '');
+    // 全选/反选的作用域是「筛选后的全部条目（跨页）」：按钮上把条数写出来，标题里说明包含其它页。
+    var selectAllButton = byId('select-all');
+    if (selectAllButton) {
+      selectAllButton.textContent = t('selectAllCount', { n: visible });
+      if (selectAllButton.setAttribute) selectAllButton.setAttribute('title', t('selectAllTip'));
+      selectAllButton.disabled = visible === 0 || state.importing;
+    }
+    var invertButton = byId('invert');
+    if (invertButton) {
+      invertButton.textContent = t('invert');
+      if (invertButton.setAttribute) invertButton.setAttribute('title', t('invertTip'));
+      invertButton.disabled = visible === 0 || state.importing;
+    }
+    var clearButton = byId('clear-selection');
+    if (clearButton) {
+      clearButton.textContent = t('clearSelection');
+      if (clearButton.setAttribute) clearButton.setAttribute('title', t('clearSelectionTip'));
+      clearButton.disabled = count === 0 || state.importing;
+    }
+    var overwrite = byId('overwrite');
+    if (overwrite) overwrite.disabled = state.importing;
+  }
+
+  function setText(id, text) {
+    var node = byId(id);
+    if (node) node.textContent = text;
+  }
+
+  function renderSources() {
+    var host = byId('sources');
+    if (!host) return;
+    var cards = state.sources.map(function (source) {
+      var kind = source.missing || source.error ? 'error' : (source.detected ? 'ok' : 'off');
+      var card = el('article', 'source');
+      if (card.setAttribute) card.setAttribute('data-state', source.missing ? 'missing' : (source.error ? 'error' : (source.detected ? 'ok' : 'off')));
+      var head = el('div', 'source-head');
+      head.appendChild(el('span', 'source-name', source.label));
+      var badge = el('span', 'badge', source.error ? t('readFailed') : (source.detected ? t('detected') : t('notDetected')));
+      if (badge.setAttribute) badge.setAttribute('data-kind', kind);
+      head.appendChild(badge);
+      if (source.detected && !source.error) head.appendChild(el('span', 'source-count', t('count', { n: source.count })));
+      card.appendChild(head);
+      if (source.path) {
+        var row = el('div', 'source-path');
+        row.appendChild(el('span', 'k', t('pathLabel')));
+        var code = el('code', '', source.path);
+        if (code.setAttribute) code.setAttribute('title', source.path);
+        row.appendChild(code);
+        card.appendChild(row);
+      }
+      var notes = [];
+      if (source.missing) notes.push(t('sourceMissing'));
+      if (source.error) notes.push(t('sourceError', { msg: source.error }));
+      if (source.notice) notes.push(source.notice);
+      if (source.keyUnavailable) notes.push(t('keyUnavailable'));
+      // 停用与结构不支持可以同时出现，各自独立一条。
+      if (source.disabled > 0) notes.push(t('disabledNote', { n: source.disabled }));
+      if (source.skipped > 0) notes.push(t('skippedNote', { n: source.skipped }));
+      notes.forEach(function (note) { card.appendChild(el('div', 'source-note', note)); });
+      return card;
+    });
+    clear(host);
+    cards.forEach(function (card) { host.appendChild(card); });
+  }
+
+  function renderToolbar() {
+    var node = byId('selection');
+    if (!node) return;
+    var count = selectedItems().length;
+    var kind = '';
+    var text;
+    if (state.phase !== 'ready') text = '';
+    else if (count === 0) text = t('selectedNone');
+    else if (count > MAX_IMPORT) { text = t('selectedTooMany', { max: MAX_IMPORT, n: count }); kind = 'warn'; }
+    else text = t('selected', { n: count });
+    node.textContent = text;
+    if (node.setAttribute) node.setAttribute('data-kind', kind);
+  }
+
+  function emptyText() {
+    var detected = state.sources.some(function (source) { return source.detected && !source.missing; });
+    if (detected) return t('emptyItems');
+    // 本次 scan 里报过「没检测到」的来源点名说清楚，用户才知道去哪里找配置文件；
+    // 宿主整段没回 sources（或只回错误来源）时退回通用文案。
+    var labels = state.sources.filter(function (source) {
+      return !source.missing && !source.detected && !source.error;
+    }).map(function (source) { return source.label.toLowerCase(); });
+    if (!labels.length) return t('emptyAll');
+    return t('emptyAllSome', { list: joinList(labels) });
+  }
+
+  function renderList() {
+    var host = byId('list');
+    if (!host) return;
+    clear(host);
+    if (state.phase === 'loading') {
+      host.appendChild(el('div', 'empty', t('scanning')));
+      return;
+    }
+    if (state.items.length === 0) {
+      host.appendChild(el('div', 'empty', emptyText()));
+      return;
+    }
+    var model = pageModel();
+    if (model.visible.length === 0) {
+      host.appendChild(el('div', 'empty', t('emptyFiltered')));
+      return;
+    }
+    var table = el('table', 'list');
+    // 固定列宽：冲突与密钥两个标记同列时也要完整可读，不能被省略号截掉。
+    var cols = el('colgroup');
+    ['c-check', 'c-name', 'c-source', 'c-format', 'c-url', 'c-models', 'c-flags'].forEach(function (name) {
+      cols.appendChild(el('col', name));
+    });
+    table.appendChild(cols);
+    var head = el('thead');
+    var headRow = el('tr');
+    t('colName');
+    [['', 'cell-check'], [t('colName'), 'cell-name'], [t('colSource'), ''], [t('colFormat'), ''],
+      [t('colUrl'), 'cell-url'], [t('colModels'), ''], [t('colFlags'), '']].forEach(function (pair) {
+      var cell = el('th', pair[1], pair[0]);
+      headRow.appendChild(cell);
+    });
+    head.appendChild(headRow);
+    table.appendChild(head);
+    var body = el('tbody');
+    model.rows.forEach(function (item) {
+      var key = itemKey(item);
+      var row = el('tr', 'row');
+      if (row.setAttribute) row.setAttribute('data-conflict', item.conflict ? '1' : '0');
+      var checkCell = el('td', 'cell-check');
+      var box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = state.selected[key] === true;
+      box.disabled = state.importing;
+      box.addEventListener('change', function () { toggleItem(key, box.checked); });
+      checkCell.appendChild(box);
+      row.appendChild(checkCell);
+
+      var nameCell = el('td', 'cell-name');
+      nameCell.appendChild(el('span', 'name', item.name));
+      if (item.appType) nameCell.appendChild(el('span', 'kind', item.appType));
+      row.appendChild(nameCell);
+      row.appendChild(el('td', 'cell-source', item.sourceId));
+      row.appendChild(el('td', 'cell-format', item.apiFormat || '—'));
+
+      var urlCell = el('td', 'cell-url');
+      var code = el('code', '', item.baseUrl || '—');
+      if (code.setAttribute) code.setAttribute('title', item.baseUrl || '');
+      urlCell.appendChild(code);
+      row.appendChild(urlCell);
+
+      var models = item.models.length ? t('modelsCount', { n: item.models.length }) : (item.model || t('modelsNone'));
+      var modelsCell = el('td', 'cell-models', models);
+      if (item.models.length && modelsCell.setAttribute) modelsCell.setAttribute('title', item.models.join('\n'));
+      row.appendChild(modelsCell);
+
+      var flags = el('td', 'cell-flags');
+      if (item.conflict) flags.appendChild(flag(t('flagConflict'), 'warn', t('flagConflictTip')));
+      if (!item.hasKey) flags.appendChild(flag(t('flagNoKey'), 'info', t('flagNoKeyTip')));
+      if (item.current) flags.appendChild(flag(t('flagCurrent'), '', ''));
+      if (!item.conflict && item.hasKey && !item.current) flags.textContent = '—';
+      row.appendChild(flags);
+      body.appendChild(row);
+    });
+    table.appendChild(body);
+    host.appendChild(table);
+  }
+
+  function flag(text, kind, tip) {
+    var node = el('span', 'flag', text);
+    if (kind && node.setAttribute) node.setAttribute('data-kind', kind);
+    if (tip && node.setAttribute) node.setAttribute('title', tip);
+    return node;
+  }
+
+  function renderBanner() {
+    var host = byId('banner');
+    if (!host) return;
+    clear(host);
+    var messages = [];
+    if (state.error) messages.push({ text: t('scanFailed', { msg: state.error }), retry: true });
+    if (state.importError) messages.push({ text: t('importFailed', { msg: state.importError }), retry: false });
+    if (state.phase === 'ready' && state.conflictUnavailable) messages.push({ text: t('conflictUnavailable'), retry: false });
+    if (state.ignored > 0) messages.push({ text: t('ignored', { n: state.ignored }), retry: false });
+    messages.forEach(function (message) {
+      var row = el('div', 'banner-row');
+      row.appendChild(el('span', 'banner-text', message.text));
+      if (message.retry) {
+        var button = el('button', 'btn', t('retry'));
+        button.type = 'button';
+        button.addEventListener('click', scan);
+        row.appendChild(button);
+      }
+      host.appendChild(row);
+    });
+    host.hidden = messages.length === 0;
+  }
+
+  function renderResult() {
+    var host = byId('result');
+    if (!host) return;
+    clear(host);
+    if (!state.result) {
+      host.hidden = true;
+      return;
+    }
+    host.hidden = false;
+    host.appendChild(el('h2', '', t('resultTitle')));
+    host.appendChild(el('p', 'summary', t('summary', {
+      imported: state.result.imported, skipped: state.result.skipped, failed: state.result.failed
+    })));
+    if (state.result.resolved !== null) {
+      host.appendChild(el('p', 'resolved', t('resolved', { resolved: state.result.resolved })));
+    }
+    if (state.result.unnamed > 0) {
+      host.appendChild(el('p', 'resolved', t('resUnaligned', { n: state.result.unnamed })));
+    }
+    if (state.result.rows.length !== state.result.submitted) {
+      host.appendChild(el('p', 'resolved', t('resCountMismatch', {
+        submitted: state.result.submitted, returned: state.result.rows.length
+      })));
+    }
+    var list = el('ul', 'res-list');
+    state.result.rows.forEach(function (row) {
+      var item = el('li', 'res-row');
+      if (item.setAttribute) item.setAttribute('data-status', row.status);
+      item.appendChild(el('span', 'res-name', row.name));
+      item.appendChild(el('span', 'res-status', statusLabel(row.status)));
+      var reason = row.status === 'imported' ? '' : reasonText(row.reason) || t('reasonUnspecified');
+      item.appendChild(el('span', 'res-reason', reason));
+      if (row.providerId) item.appendChild(el('span', 'res-id', t('providerId', { id: row.providerId })));
+      list.appendChild(item);
+    });
+    host.appendChild(list);
+  }
+
+  function renderFilters() {
+    var host = byId('filters');
+    if (!host) return;
+    var active = filterActive();
+    var nodes = [];
+    var all = el('button', 'chip', t('filterAll'));
+    all.type = 'button';
+    if (all.setAttribute) {
+      all.setAttribute('data-all', '1');
+      all.setAttribute('data-on', active ? '0' : '1');
+      all.setAttribute('aria-pressed', active ? 'false' : 'true');
+      all.setAttribute('title', t('clearFilterTip'));
+    }
+    all.addEventListener('click', clearFilter);
+    nodes.push(all);
+    // chip 上的条数是本次 scan 里该来源的条目数（全部可见时的条数）；
+    // 没检测到的来源照样出 chip，置灰并计 0，用户能看出这一轮到底扫了哪些来源。
+    state.sources.forEach(function (source) {
+      var count = sourceItemCount(source.id);
+      var on = state.filter[source.id] === true;
+      var chip = el('button', 'chip');
+      chip.type = 'button';
+      if (chip.setAttribute) {
+        chip.setAttribute('data-source', source.id);
+        chip.setAttribute('data-on', on ? '1' : '0');
+        chip.setAttribute('data-count', String(count));
+        chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+        chip.setAttribute('title', t('filterTip'));
+        if (count === 0) chip.setAttribute('data-empty', '1');
+      }
+      chip.appendChild(el('span', 'chip-label', source.label));
+      chip.appendChild(el('span', 'chip-count', String(count)));
+      chip.addEventListener('click', function () { toggleFilter(source.id); });
+      nodes.push(chip);
+    });
+    clear(host);
+    nodes.forEach(function (node) { host.appendChild(node); });
+  }
+
+  function renderPager() {
+    var host = byId('pager');
+    if (!host) return;
+    setText('page-first', t('pageFirst'));
+    setText('page-prev', t('pagePrev'));
+    setText('page-next', t('pageNext'));
+    setText('page-last', t('pageLast'));
+    setText('page-size-label', t('pageSize'));
+    if (state.phase !== 'ready') {
+      host.hidden = true;
+      return;
+    }
+    var model = pageModel();
+    var busy = state.importing;
+    // 只有一页时保留分页栏（每页条数还得能改），翻页按钮整体置灰。
+    var multi = model.pages > 1;
+    setText('page-info', t('pageInfo', { page: state.page, pages: model.pages }));
+    setText('page-total', t('pageTotal', { n: model.visible.length }));
+    // 勾选跨页保存：工具条与粘在底部的分页栏各显示一份总数，滚到列表任意位置都能核对没漏选。
+    setText('pager-selected', t('pagerSelected', { n: selectedItems().length }));
+    var first = byId('page-first');
+    if (first) first.disabled = busy || !multi || state.page <= 1;
+    var prev = byId('page-prev');
+    if (prev) prev.disabled = busy || !multi || state.page <= 1;
+    var next = byId('page-next');
+    if (next) next.disabled = busy || !multi || state.page >= model.pages;
+    var last = byId('page-last');
+    if (last) last.disabled = busy || !multi || state.page >= model.pages;
+    var select = byId('page-size');
+    if (select) {
+      select.value = String(state.perPage);
+      select.disabled = busy;
+    }
+    host.hidden = false;
+  }
+
+  function render() {
+    renderChrome();
+    renderFilters();
+    renderSources();
+    renderToolbar();
+    renderList();
+    renderPager();
+    renderBanner();
+    renderResult();
+  }
+
+  function renderListViews() {
+    renderChrome();
+    renderFilters();
+    renderToolbar();
+    renderList();
+    renderPager();
+  }
+
+  function toggleItem(key, checked) {
+    if (checked) state.selected[key] = true;
+    else delete state.selected[key];
+    renderListViews();
+  }
+
+  // 全选只把筛选后的条目补进勾选集合，筛选之外的勾选保持不动（切筛选不丢勾选）。
+  function selectAllVisible() {
+    applyToVisible(function (key) { state.selected[key] = true; });
+    renderListViews();
+  }
+
+  // 取消全选是一键清空：跨页、跨来源的勾选全清掉。
+  function clearSelection() {
+    state.selected = {};
+    renderListViews();
+  }
+
+  function invertSelection() {
+    applyToVisible(function (key) {
+      if (state.selected[key] === true) delete state.selected[key];
+      else state.selected[key] = true;
+    });
+    renderListViews();
+  }
+
+  // 换筛选条件回到第 1 页；真越界时由 pageModel 夹到末页兜底。
+  function toggleFilter(sourceId) {
+    if (state.filter[sourceId] === true) delete state.filter[sourceId];
+    else state.filter[sourceId] = true;
+    state.page = 1;
+    renderListViews();
+  }
+
+  function clearFilter() {
+    state.filter = {};
+    state.page = 1;
+    renderListViews();
+  }
+
+  function goPage(page) {
+    state.page = page;
+    renderListViews();
+  }
+
+  function setPageSize(size) {
+    if (PER_PAGE_OPTIONS.indexOf(size) < 0) return;
+    state.perPage = size;
+    state.page = 1;
+    renderListViews();
+  }
+
+  function scan() {
+    if (state.importing) return;
+    state.phase = 'loading';
+    state.error = '';
+    state.importError = '';
+    state.result = null;
+    state.selected = {};
+    render();
+    hostCall('sources.scan', { sources: SOURCE_ORDER }).then(function (value) {
+      var scanned = normalizeScan(value);
+      state.sources = scanned.sources;
+      state.items = scanned.items;
+      state.ignored = scanned.ignored;
+      state.conflictUnavailable = scanned.conflictUnavailable;
+      state.phase = 'ready';
+      pruneFilter();
+      render();
+    }).catch(function (error) {
+      state.phase = 'failed';
+      state.items = [];
+      state.selected = {};
+      state.conflictUnavailable = false;
+      state.error = describeError(error);
+      render();
+    });
+  }
+
+  function runImport() {
+    var picked = selectedItems();
+    if (state.importing || state.phase !== 'ready') return;
+    if (picked.length < 1 || picked.length > MAX_IMPORT) return;
+    state.importing = true;
+    state.importError = '';
+    state.result = null;
+    renderChrome();
+    renderToolbar();
+    renderList();
+    renderPager();
+    renderBanner();
+    hostCall('import.apply', {
+      items: picked.map(function (item) {
+        return { sourceId: item.sourceId, sourceKey: item.sourceKey, overwrite: state.overwrite };
+      })
+    }).then(function (value) {
+      var result = normalizeImportResult(value, picked);
+      state.importing = false;
+      state.result = result;
+      render();
+      notifyHost(t('notifyDone', { imported: result.imported, skipped: result.skipped, failed: result.failed }), 'info');
+    }).catch(function (error) {
+      state.importing = false;
+      state.importError = describeError(error);
+      render();
+    });
+  }
+
+  function buildPageSize() {
+    var select = byId('page-size');
+    if (!select) return;
+    clear(select);
+    PER_PAGE_OPTIONS.forEach(function (size) {
+      var option = el('option', '', String(size));
+      option.value = String(size);
+      if (option.setAttribute) option.setAttribute('value', String(size));
+      select.appendChild(option);
+    });
+    select.value = String(state.perPage);
+  }
+
+  function wire() {
+    on('rescan', 'click', scan);
+    on('import', 'click', runImport);
+    on('select-all', 'click', selectAllVisible);
+    on('invert', 'click', invertSelection);
+    on('clear-selection', 'click', clearSelection);
+    on('page-first', 'click', function () { goPage(1); });
+    on('page-prev', 'click', function () { goPage(state.page - 1); });
+    on('page-next', 'click', function () { goPage(state.page + 1); });
+    on('page-last', 'click', function () { goPage(pageModel().pages); });
+    var sizeSelect = byId('page-size');
+    if (sizeSelect && sizeSelect.addEventListener) {
+      sizeSelect.addEventListener('change', function () { setPageSize(parseInt(sizeSelect.value, 10)); });
+    }
+    buildPageSize();
+    var overwrite = byId('overwrite');
+    if (overwrite && overwrite.addEventListener) {
+      overwrite.addEventListener('change', function () {
+        state.overwrite = overwrite.checked === true;
+        renderChrome();
+      });
+    }
+    window.addEventListener('gonavi:host-preferences', function () {
+      readPrefs();
+      render();
+    });
+  }
+
+  function boot() {
+    wire();
+    readPrefs();
+    render();
+    scan();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+</body>
+</html>

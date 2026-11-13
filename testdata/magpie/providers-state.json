@@ -1,0 +1,59 @@
+{
+  "version": "0.1.3358",
+  "providers": {
+    "providers": [
+      {
+        "id": "imported",
+        "name": "千刀",
+        "host": "api.zzzcoding.org",
+        "anthropic": "https://api.zzzcoding.org",
+        "chat": "",
+        "responses": "",
+        "chosen": ["claude-opus-5[1M]", "claude-opus-5"],
+        "models": [
+          { "id": "claude-opus-5[1M]", "name": "Opus" },
+          { "id": "claude-opus-5", "name": "Opus 5" }
+        ],
+        "key": { "set": true, "masked": "sk-e…e6c5", "optional": false },
+        "keyList": [{ "id": "71388600d1", "masked": "sk-e…e6c5", "active": true, "on": true }],
+        "off": true
+      },
+      {
+        "id": "imported-3",
+        "name": "百倍",
+        "host": "sub.100xlabs.space",
+        "baseAPI": "anthropic",
+        "anthropic": "https://sub.100xlabs.space",
+        "chosen": [],
+        "models": [{ "id": "claude-opus-5", "name": "Opus 5" }],
+        "key": { "set": true, "masked": "sk-a…9b44", "optional": false },
+        "off": false
+      },
+      {
+        "id": "chatflow-gpt",
+        "name": "ChatFlow",
+        "baseAPI": "responses",
+        "responses": "https://chatflow.example/v1",
+        "chat": "https://chatflow.example/v1/chat",
+        "anthropic": "",
+        "chosen": ["gpt-6-astra"],
+        "models": [],
+        "key": { "set": false, "masked": "", "optional": true },
+        "off": false
+      },
+      {
+        "id": "no-endpoint",
+        "name": "无端点",
+        "chat": "",
+        "responses": "",
+        "anthropic": "",
+        "chosen": [],
+        "models": []
+      }
+    ],
+    "presets": {},
+    "excluded": {},
+    "gateway": {},
+    "plugins": {}
+  }
+}

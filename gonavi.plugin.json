@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "apiVersion": 1,
+  "id": "gh-autumnnazi.ai-config",
+  "name": "AI 配置导入",
+  "version": "0.1.0",
+  "minHostVersion": "1.2.3",
+  "description": "把 cc switch / magpie 等 AI 工具的供应商配置导入 GoNavi AI 供应商列表。",
+  "author": "AutumnNazi",
+  "license": "MIT",
+  "permissions": ["ui.pages", "ui.html-panel", "host.ai.providers.read", "host.ai.providers.write"],
+  "permissionNotes": {
+    "ui.pages": "在主窗口工具栏插件菜单里加入「AI 配置导入」入口，并以标签页打开导入页。",
+    "ui.html-panel": "导入页是自定义 HTML 页面，页面文档内联在清单里，需要该权限才能在沙箱 iframe 中渲染。",
+    "host.ai.providers.read": "只读现有 AI 供应商的名称与地址元数据，用于标记重复项，不读取任何密钥。",
+    "host.ai.providers.write": "把用户勾选的供应商写入 GoNavi AI 供应商列表；不读取、不回显任何既有密钥。"
+  },
+  "backend": {
+    "platforms": {
+      "windows/amd64": { "executable": "bin/gonavi-ai-config-windows-amd64.exe" }
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "id": "sources.scan",
+        "title": "扫描本机 AI 工具配置，返回可选供应商（不含密钥）",
+        "effect": "read",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sources": { "type": "array", "items": { "type": "string", "enum": ["cc-switch", "magpie", "ccgui", "opencode", "mimocode"] }, "maxItems": 5 }
+          }
+        }
+      },
+      {
+        "id": "import.apply",
+        "title": "把勾选的供应商导入 GoNavi AI 供应商列表",
+        "effect": "write",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["items"],
+          "properties": {
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["sourceId", "sourceKey"],
+                "properties": {
+                  "sourceId": { "type": "string", "enum": ["cc-switch", "magpie", "ccgui", "opencode", "mimocode"] },
+                  "sourceKey": { "type": "string", "maxLength": 200 },
+                  "overwrite": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "pages": [
+      { "id": "ai-config-import", "title": "AI 配置导入", "html": { "source": "__INLINE_FRONTEND_INDEX_HTML__" } }
+    ],
+    "navigation": [
+      { "id": "ai-config-import", "title": "AI 配置导入", "page": "ai-config-import", "target": "page", "location": "tools", "order": 20 }
+    ]
+  }
+}

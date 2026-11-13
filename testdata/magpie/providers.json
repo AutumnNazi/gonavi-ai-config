@@ -1,0 +1,64 @@
+{
+  "providers": [
+    {
+      "id": "imported",
+      "name": "千刀",
+      "host": "api.zzzcoding.org",
+      "anthropic": "https://api.zzzcoding.org",
+      "chat": "",
+      "responses": "",
+      "models": ["claude-opus-5[1M]", "claude-opus-5"],
+      "key": "sk-imported-plain-0001",
+      "headers": { "x-fixture-header": "v1" }
+    },
+    {
+      "id": "multi-key",
+      "name": "多密钥站",
+      "baseAPI": "responses",
+      "responses": "https://multi.example/v1",
+      "chat": "",
+      "anthropic": "",
+      "models": ["gpt-6-astra"],
+      "key": "sk-multikey-top-0002",
+      "keys": [
+        { "id": "primary", "key": "sk-multikey-primary-0003", "off": false },
+        { "id": "backup", "key": "sk-multikey-backup-0004", "off": false }
+      ]
+    },
+    {
+      "id": "disabled",
+      "name": "已关闭",
+      "baseAPI": "anthropic",
+      "anthropic": "https://off.example",
+      "models": ["claude-opus-5"],
+      "key": "sk-disabled-0005",
+      "off": true
+    },
+    {
+      "id": "no-key",
+      "name": "缺密钥",
+      "baseAPI": "chat",
+      "chat": "https://nokey.example/v1",
+      "models": ["gpt-6-astra"]
+    },
+    {
+      "id": "keys-unknown-shape",
+      "name": "keys 结构未知",
+      "baseAPI": "chat",
+      "chat": "https://unknown.example/v1",
+      "key": "sk-unknown-shape-0006",
+      "keys": [{ "id": "retired", "key": "sk-unknown-shape-0006", "off": true }]
+    },
+    {
+      "id": "no-endpoint",
+      "name": "无端点",
+      "models": ["gpt-6-astra"],
+      "key": "sk-no-endpoint-0007",
+      "chat": "",
+      "responses": "",
+      "anthropic": ""
+    }
+  ],
+  "noAutoGroups": {},
+  "order": []
+}

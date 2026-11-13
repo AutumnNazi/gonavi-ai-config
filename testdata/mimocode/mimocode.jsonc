@@ -1,0 +1,54 @@
+{
+  // mimocode 的配置带注释，扩展名是 .jsonc：解析前必须先剥注释。
+  "mcp": {
+    "gonavi": {
+      "type": "local",
+      "command": ["F:\\soft\\gonavi\\GoNavi.exe", "mcp-server"],
+      "enabled": true
+    }
+  },
+  "$schema": "https://mimo.xiaomi.com/mimocode/config.json", // 这个 URL 里的 // 不是注释
+  "provider": {
+    /* 块注释也混在里面，
+       而且跨了好几行 */
+    "hyb-grok": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "黑与白grok",
+      "options": {
+        "apiKey": "sk-mimocode-fixture-hybgrok-0001",
+        "baseURL": "https://ai.hybgzs.com/v1"
+      },
+      "models": {
+        "grok-4.7": { "name": "Grok 4.7" }
+      }
+    },
+    "b6508e38-3fd1-4382-8ebf-8dab72c6e7d3": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "nvidia",
+      "options": {
+        "apiKey": "sk-mimocode-fixture-nvidia-0002",
+        "baseURL": "https://integrate.example-nvidia.test/v1"
+      },
+      "models": {
+        "moonshotai/kimi-k3": { "name": "moonshotai/kimi-k3" },
+        "deepseek-ai/deepseek-v4-pro-0813": { "name": "deepseek-ai/deepseek-v4-pro-0813" }
+      }
+    },
+    "local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "本机中转",   // 行尾注释
+      "options": {
+        "apiKey": "sk-mimocode-fixture-local-0003",
+        "baseURL": "http://127.0.0.1:3425/v1"
+      },
+      "models": {
+        "nvidia/z-ai/glm-5.3-flash": { "name": "GLM-5.3-Flash" }
+      }
+    },
+    "no-key": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": { "baseURL": "https://mimocode.example-nokey.test/v1" },
+      "models": {}
+    }
+  }
+}

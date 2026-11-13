@@ -1,0 +1,125 @@
+[
+  {
+    "id": "c435024e-8384-417e-a2f4-8f8cd4c9c36e",
+    "app_type": "claude",
+    "name": "千刀",
+    "is_current": 1,
+    "website_url": "https://www.anthropic.com/claude-code",
+    "settings_config": {
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "test-fake-key-cc-claude-0001",
+        "ANTHROPIC_BASE_URL": "https://api.zzzcoding.org",
+        "ANTHROPIC_MODEL": "claude-opus-5[1M]",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5[1M]",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-opus-5",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-opus-5",
+        "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-5[1M]"
+      }
+    }
+  },
+  {
+    "id": "ac6b0f26-fd8c-4425-a7f7-62332cb757dc",
+    "app_type": "claude-desktop",
+    "name": "MiniMax",
+    "meta": { "apiFormat": "anthropic", "claudeDesktopMode": "proxy" },
+    "settings_config": {
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "test-fake-key-cc-desktop-0002",
+        "ANTHROPIC_BASE_URL": "https://api.minimaxi.com/anthropic",
+        "ANTHROPIC_MODEL": "MiniMax-M2.7",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "MiniMax-M2.7",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "MiniMax-M2.7",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "MiniMax-M2.7"
+      }
+    }
+  },
+  {
+    "id": "desktop-empty-env",
+    "app_type": "claude-desktop",
+    "name": "Claude Desktop Official",
+    "settings_config": { "env": {} }
+  },
+  {
+    "id": "8f90a261-fdda-4ab2-aa58-de7ed667eb58",
+    "app_type": "codex",
+    "name": "千刀",
+    "website_url": "https://www.anthropic.com/claude-code",
+    "meta": { "apiFormat": "openai_responses", "proxyMode": "always", "proxyUrl": "http://127.0.0.1:7890" },
+    "settings_config": {
+      "auth": { "OPENAI_API_KEY": "test-fake-key-cc-codex-0003" },
+      "config": "# 注释行\nmodel_provider = \"custom\"\nmodel = \"gpt-6-astra\"\nmodel_reasoning_effort = \"high\"\n\n[model_providers]\n\n[model_providers.custom]\nname = \"custom\"\nbase_url = \"https://motomoto.lol/v1\"\nwire_api = \"responses\"\n"
+    }
+  },
+  {
+    "id": "codex-no-base-url",
+    "app_type": "codex",
+    "name": "无端点",
+    "meta": { "proxyMode": "always", "proxyUrl": "http://127.0.0.1:7890" },
+    "settings_config": {
+      "auth": { "OPENAI_API_KEY": "test-fake-key-cc-codex-0003" },
+      "config": "model = \"gpt-5.3-codex\"\n"
+    }
+  },
+  {
+    "id": "gemini-1",
+    "app_type": "gemini",
+    "name": "烁公益",
+    "settings_config": {
+      "env": {
+        "GEMINI_API_KEY": "test-fake-key-cc-gemini-0004",
+        "GOOGLE_GEMINI_BASE_URL": "https://elysia.h-e.top",
+        "GEMINI_MODEL": "gemini-3.5-flash"
+      }
+    }
+  },
+  {
+    "id": "opencode-1",
+    "app_type": "opencode",
+    "name": "zmoon",
+    "settings_config": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": { "apiKey": "test-fake-key-cc-opencode-0005", "baseURL": "https://newapi.zmoon.top/v1" },
+      "models": {
+        "glm-5.2": { "name": "glm-5.2" },
+        "deepseek-v4-flash-0731": { "name": "deepseek-v4-flash-0731" }
+      }
+    }
+  },
+  {
+    "id": "opencode-anthropic",
+    "app_type": "opencode",
+    "name": "anthropic 兼容",
+    "settings_config": {
+      "npm": "@ai-sdk/anthropic",
+      "options": { "apiKey": "test-fake-key-cc-opencode-anthropic-0006", "baseURL": "https://api.example-anthropic.test/v1" },
+      "models": { "claude-opus-5": { "name": "claude-opus-5" } }
+    }
+  },
+  {
+    "id": "grokbuild-1",
+    "app_type": "grokbuild",
+    "name": "华龙",
+    "meta": { "apiFormat": "openai_responses", "apiKeyField": "ANTHROPIC_AUTH_TOKEN" },
+    "settings_config": {
+      "config": "[models]\ndefault = \"grok-4.6\"\n\n[model.\"grok-4.6\"]\nmodel = \"grok-4.6\"\nbase_url = \"https://api-fast.hualong.online/v1\"\napi_key = \"test-fake-key-cc-grokbuild-0007\"\n"
+    }
+  },
+  {
+    "id": "hermes-1",
+    "app_type": "hermes",
+    "name": "existing-hermes",
+    "settings_config": {
+      "name": "existing-hermes",
+      "base_url": "https://api.hermes.example/v1",
+      "api_key": "test-fake-key-cc-hermes-0008",
+      "model": "gpt-4o",
+      "models": [{ "id": "gpt-4o", "name": "GPT-4o Updated" }]
+    }
+  },
+  {
+    "id": "unknown-app",
+    "app_type": "mcod",
+    "name": "未支持类型",
+    "settings_config": { "env": { "X": "y" } }
+  }
+]

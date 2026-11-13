@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "claude": {
+    "providers": {
+      "7c1f0c14-5f2e-4a3b-9c8d-1a2b3c4d5e6f": {
+        "id": "7c1f0c14-5f2e-4a3b-9c8d-1a2b3c4d5e6f",
+        "name": "未验证形态样例",
+        "createdAt": 1789092057358
+      }
+    },
+    "current": "__local_settings_json__"
+  },
+  "codex": {
+    "providers": {
+      "11111111-1111-4111-8111-111111111111": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "样例主线路",
+        "authJson": "{\"OPENAI_API_KEY\":\"sk-ccgui-fixture-main-0001\"}",
+        "configToml": "model_provider = \"custom\"\nmodel = \"gpt-6-astra\"\nmodel_reasoning_effort = \"xhigh\"\n\n[features]\ncontent_item_kinds = false\n\n[model_providers.custom]\nname = \"custom\"\nbase_url = \"https://ccgui.example-main.test/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = true\n",
+        "createdAt": 1789092057358
+      },
+      "22222222-2222-4222-8222-222222222222": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "",
+        "authJson": "{\"OPENAI_API_KEY\":\"\"}",
+        "configToml": "model = \"kimi-k3-code\"\n\n[model_providers.blank]\nbase_url = \"https://ccgui.example-blank.test/v1\"\n",
+        "createdAt": 1789092057400
+      },
+      "33333333-3333-4333-8333-333333333333": {
+        "id": "33333333-3333-4333-8333-333333333333",
+        "name": "无端点样例",
+        "authJson": "{\"OPENAI_API_KEY\":\"sk-ccgui-fixture-nobase-0003\"}",
+        "configToml": "model = \"glm-5.2\"\n",
+        "createdAt": 1789092057410
+      },
+      "44444444-4444-4444-8444-444444444444": {
+        "id": "44444444-4444-4444-8444-444444444444",
+        "name": "坏 authJson 样例",
+        "authJson": "{\"OPENAI_API_KEY\": ",
+        "configToml": "model = \"grok-4.6\"\n\n[model_providers.broken]\nbase_url = \"https://ccgui.example-broken.test/v1\"\n",
+        "createdAt": 1789092057420
+      }
+    },
+    "current": null
+  },
+  "gemini": { "providers": {}, "enabled": true, "env": {}, "auth_mode": "api-key" },
+  "kimi": { "providers": {}, "current": null },
+  "grok": { "providers": {}, "current": null },
+  "opencode": { "providers": {}, "current": null },
+  "soundNotification": { "enabled": false },
+  "customModelPricing": {},
+  "autoOpenFile": { "default": "D:/work/sample-project" },
+  "promptEnhancer": { "provider": "custom", "models": {} }
+}
