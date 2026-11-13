@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // magpieStateFixturePath 是运行态兜底夹具（只有掩码）。

@@ -110,7 +110,7 @@ status 枚举：`imported` | `skipped` | `failed`；reason 枚举：`duplicate` 
   },
   "backend": {
     "platforms": {
-      "windows/amd64": { "executable": "bin/gonavi-ai-config-windows-amd64.exe" }
+      "windows/amd64": { "executable": "bin/gonavi-ai-config-windows-amd64.exe", "runtime": "native" }
     }
   },
   "contributes": {

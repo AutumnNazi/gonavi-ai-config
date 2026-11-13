@@ -10,8 +10,8 @@ import (
 
 	goplugin "github.com/Syngnat/GoNavi/sdk/go"
 
-	"gonavi-ai-config/internal/contract"
-	"gonavi-ai-config/internal/sources"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/sources"
 )
 
 // 错误码用 JSON-RPC 保留段之外的自定义段，宿主透传给页面。

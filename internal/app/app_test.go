@@ -13,8 +13,8 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"gonavi-ai-config/internal/contract"
-	"gonavi-ai-config/internal/sources"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/sources"
 )
 
 // 夹具与 internal/sources 共用 testdata/，期望密钥一律从夹具推导。

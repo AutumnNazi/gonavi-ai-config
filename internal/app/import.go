@@ -6,7 +6,7 @@ import (
 
 	goplugin "github.com/Syngnat/GoNavi/sdk/go"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // importApplyResult 是 import.apply 的返回体：宿主结果 + resolved。

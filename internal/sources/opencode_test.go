@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // opencodeFixturePath 返回照本机 ~/.config/opencode/opencode.json 形态写的夹具（只读使用）。

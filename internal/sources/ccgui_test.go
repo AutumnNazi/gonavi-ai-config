@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // ccguiFixturePath 返回照本机 ~/.ccgui/config.json 形态写的夹具（只读使用）。

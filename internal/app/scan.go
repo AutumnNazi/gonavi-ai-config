@@ -6,8 +6,8 @@ import (
 
 	goplugin "github.com/Syngnat/GoNavi/sdk/go"
 
-	"gonavi-ai-config/internal/contract"
-	"gonavi-ai-config/internal/sources"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/sources"
 )
 
 // handleScan 实现 sources.scan。命令只做参数解码、扫描与编码，

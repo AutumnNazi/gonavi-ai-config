@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"gonavi-ai-config/internal/contract"
-	"gonavi-ai-config/internal/toml"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/toml"
 
 	_ "modernc.org/sqlite"
 )

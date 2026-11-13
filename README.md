@@ -71,7 +71,9 @@ go test -tags livescan ./internal/sources/ -run TestLiveScan -v   # 用本机真
 node scripts/build.mjs                                            # 产出 dist/<id>-<version>.zip
 ```
 
-产物路径由脚本打印。包内只含 `bin/` 与清单；清单里已内联页面文档。
+产物路径由脚本打印。包内只含 `bin/`、清单与 `LICENSE`（作者指南第 5 节的根目录要求：清单 + 平台二进制 + 许可正文，本插件不声明图标）；清单里已内联页面文档。
+
+打包脚本按作者指南的约定消费 SDK：`go mod` 里 `require github.com/Syngnat/GoNavi/sdk/go v0.0.0` 加一条指向本机 GoNavi 检出的 `replace`（见 [sdk.md](https://plugin.gonavi.org/docs/sdk)）——发布的是打包归档而不是源码树，绝对路径不会进包。
 
 ## 边界
 

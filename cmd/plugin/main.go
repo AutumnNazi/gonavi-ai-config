@@ -10,7 +10,7 @@ import (
 
 	goplugin "github.com/Syngnat/GoNavi/sdk/go"
 
-	"gonavi-ai-config/internal/app"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/app"
 )
 
 func main() {

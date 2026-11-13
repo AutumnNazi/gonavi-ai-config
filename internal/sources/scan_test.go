@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 type fakeLister struct {

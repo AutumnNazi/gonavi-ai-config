@@ -7,7 +7,7 @@
 // 写成 "frontend/index.html" 只会让插件页白屏。所以仓库根的 gonavi.plugin.json 是模板
 // （html.source 为占位令牌），打包时把真实页面内容写进去，页面文件因此不必再进包。
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -82,8 +82,17 @@ if (Buffer.byteLength(stagedManifest, "utf8") > 1024 * 1024) {
 }
 writeFileSync(path.join(stage, "gonavi.plugin.json"), stagedManifest);
 
+// 作者指南第 5 节：发布包根目录至少包含 gonavi.plugin.json、bin/…、icons/…、LICENSE。
+// 本插件不声明图标，因此清单 + 二进制 + 许可证三样齐了才算合规；缺证照直接失败，
+// 不要打出一个「装得上但没有许可正文」的包。
+const licensePath = path.join(root, "LICENSE");
+if (!existsSync(licensePath)) {
+  throw new Error("仓库根缺少 LICENSE，发布包必须带许可正文");
+}
+copyFileSync(licensePath, path.join(stage, "LICENSE"));
+
 rmSync(out, { force: true });
 // Windows 自带 bsdtar 能按扩展名自动选 zip，避免再依赖 zip 工具。
-execFileSync("tar", ["-a", "-cf", out, "-C", stage, "bin", "gonavi.plugin.json"], { stdio: "inherit" });
+execFileSync("tar", ["-a", "-cf", out, "-C", stage, "bin", "gonavi.plugin.json", "LICENSE"], { stdio: "inherit" });
 
 console.log(`完成：${out}（${statSync(out).size} bytes）`);

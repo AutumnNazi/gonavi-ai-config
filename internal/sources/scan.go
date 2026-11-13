@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // ProviderRef 是宿主「已存在供应商」的最小投影，只带判重需要的名称与地址。

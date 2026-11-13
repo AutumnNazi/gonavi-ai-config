@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"gonavi-ai-config/internal/contract"
-	"gonavi-ai-config/internal/sources"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/sources"
 )
 
 // stubSource 是最小来源桩：固定一条条目，路径指向当前进程可执行文件（必然存在）。

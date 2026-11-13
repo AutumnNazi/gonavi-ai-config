@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // magpie 读 Magpie 的供应商配置，两级来源：

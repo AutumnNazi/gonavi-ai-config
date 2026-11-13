@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // 本文件放 ccgui / opencode / mimocode 三个新来源共用的读取与错误文案，

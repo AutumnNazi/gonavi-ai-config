@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"gonavi-ai-config/internal/contract"
-	"gonavi-ai-config/internal/toml"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/toml"
 )
 
 // sourceCCGUI 是来源标识，与 docs/CONTRACT.md 第 4.1 节的 sourceId 一致。

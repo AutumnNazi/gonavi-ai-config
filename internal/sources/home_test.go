@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"gonavi-ai-config/internal/contract"
+	"github.com/AutumnNazi/gonavi-ai-config/internal/contract"
 )
 
 // unsetHomeEnv 真正删掉家目录相关变量。t.Setenv 只能设不能删，而这里要复现宿主受限环境

@@ -1,4 +1,4 @@
-module gonavi-ai-config
+module github.com/AutumnNazi/gonavi-ai-config
 
 go 1.24.0
 
@@ -20,5 +20,6 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 )
 
-// 本地开发：指向本机 GoNavi 仓库的 SDK。发布前可改为版本号或保留 replace。
+// 按插件作者指南 sdk.md 的约定消费 SDK：开发期用本地检出，require 写 v0.0.0、由 replace 指到
+// 本机 GoNavi 仓库；发布的是打包归档而不是源码树，因此这里的绝对路径不影响分发。
 replace github.com/Syngnat/GoNavi/sdk/go => E:/code/GoNavi/sdk/go
