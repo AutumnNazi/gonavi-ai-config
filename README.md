@@ -42,13 +42,6 @@ magpie 主路径不可用（不存在或解析失败）时才退回运行态投�
 因此解析不到家目录时该来源 `detected=false`、`path` 留空、
 `error` 写明 `cannot resolve user home`，绝不允许退化成相对路径（静默失败）。
 
-### magpie 密钥（v1.2 修正）
-
-早先「magpie 只暴露掩码密钥」的结论只对**运行态投影** `~/.cache/magpie/providers-state.json` 成立。
-magpie 的**源配置**在 XDG 目录，那里 `key` 是明文（本机实测 54 条供应商中 44 条带明文密钥），
-所以主路径读它、密钥照常导入；只有退回运行态投影时才 `keyUnavailable=true`、`hasKey=false`、不下发 `apiKey`。
-任何情况下都不伪造、不猜测、不截断密钥。
-
 ## 密钥边界
 
 密钥与自定义请求头只在内存里按 `sourceKey` 现取现用：`sources.SourceItem`（含 `Key`/`Headers`）只用于 Fetch，
