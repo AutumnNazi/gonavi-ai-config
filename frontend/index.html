@@ -236,6 +236,7 @@ padding-top:6px;font-size:12.5px}
       reasonUnspecified: '宿主没有给出这一条的原因。',
       resUnaligned: '其中 {n} 条结果没有带回供应商名称（来源里已找不到配置的条目），无法确定对应的是哪一条；上方汇总计数仍然准确。',
       resCountMismatch: '本次提交 {submitted} 条，宿主只返回了 {returned} 条结果。',
+      resCancelled: '本次导入中途被取消（宿主超时、插件被停用或页面关闭）：以上计数只覆盖取消前处理过的部分，已标为「已导入」的条目请重新扫描核对。',
       notifyDone: '导入完成：成功 {imported} 条，跳过 {skipped} 条，失败 {failed} 条。',
       reasonDuplicate: '已存在同名同地址的供应商，本次没有覆盖。',
       reasonInvalidName: '供应商名称去掉首尾空格后为空或超过 128 个字符。',
@@ -243,6 +244,8 @@ padding-top:6px;font-size:12.5px}
       reasonApiFormat: '接口格式不在支持范围（openai、openai-responses、anthropic、gemini）。',
       reasonApiKey: '供应商密钥长度超出宿主上限（4096 个字符）。',
       reasonTooManyHeaders: '这条供应商的自定义请求头超过宿主上限（16 组），没有导入——静默丢掉请求头会做出一条看起来正常、实际调不通的供应商。',
+      reasonInvalidHeaders: '这条供应商的自定义请求头有无法落库的项（键名为空或过长、或单个值超过宿主上限 4096 字节），没有导入——静默丢掉请求头会做出一条看起来正常、实际调不通的供应商。',
+      reasonCancelled: '本次导入中途取消，这条还没轮到处理。',
       reasonSaveFailed: '宿主保存这条供应商时失败了。',
       reasonInternal: '宿主内部错误。',
       reasonSourceMissing: '来源里已经找不到这条配置，可能已被改动或删除。',
@@ -317,6 +320,7 @@ padding-top:6px;font-size:12.5px}
       reasonUnspecified: 'The host gave no reason for this entry.',
       resUnaligned: '{n} results came back without a provider name (entries the source no longer holds), so they cannot be matched to a specific entry. The summary counts above stay accurate.',
       resCountMismatch: '{submitted} entries were submitted but the host returned {returned} results.',
+      resCancelled: 'This import was cancelled part-way through (host timeout, plugin disabled, or page closed): the counts above cover only what was processed first — re-run the scan to confirm which of the imported entries really landed.',
       notifyDone: 'Import finished: {imported} imported, {skipped} skipped, {failed} failed.',
       reasonDuplicate: 'A provider with the same name and base URL already exists and was not overwritten.',
       reasonInvalidName: 'The provider name is empty after trimming or longer than 128 characters.',
@@ -324,6 +328,8 @@ padding-top:6px;font-size:12.5px}
       reasonApiFormat: 'The API format is unsupported (openai, openai-responses, anthropic, gemini).',
       reasonApiKey: 'The provider credential exceeds the host limit (4096 characters).',
       reasonTooManyHeaders: 'This provider carries more than the host limit of 16 custom headers, so it was not imported — dropping headers silently would produce a provider that looks fine but cannot authenticate.',
+      reasonInvalidHeaders: 'This provider has custom headers the host cannot store (an empty or oversized name, or a value longer than 4096 bytes), so it was not imported — dropping headers silently would produce a provider that looks fine but cannot authenticate.',
+      reasonCancelled: 'This import was cancelled before this entry was processed.',
       reasonSaveFailed: 'The host failed to save this provider.',
       reasonInternal: 'Internal host error.',
       reasonSourceMissing: 'The source no longer contains this entry; it may have been edited or removed.',
@@ -589,6 +595,9 @@ padding-top:6px;font-size:12.5px}
       imported: value.imported,
       skipped: value.skipped,
       failed: value.failed,
+      // 宿主中途取消：计数只覆盖取消前处理过的部分，页面必须把这件事说出来，
+      // 否则用户会把「还剩几条没处理」当成「全都处理完了」。
+      cancelled: value.cancelled === true,
       resolved: typeof value.resolved === 'number' ? value.resolved : null,
       unnamed: unnamed,
       submitted: picked.length,
@@ -604,6 +613,8 @@ padding-top:6px;font-size:12.5px}
       invalid_api_format: 'reasonApiFormat',
       invalid_api_key: 'reasonApiKey',
       too_many_headers: 'reasonTooManyHeaders',
+      invalid_headers: 'reasonInvalidHeaders',
+      cancelled: 'reasonCancelled',
       save_failed: 'reasonSaveFailed',
       internal: 'reasonInternal',
       source_missing: 'reasonSourceMissing',
@@ -919,6 +930,9 @@ padding-top:6px;font-size:12.5px}
       host.appendChild(el('p', 'resolved', t('resCountMismatch', {
         submitted: state.result.submitted, returned: state.result.rows.length
       })));
+    }
+    if (state.result.cancelled) {
+      host.appendChild(el('p', 'resolved', t('resCancelled')));
     }
     var list = el('ul', 'res-list');
     state.result.rows.forEach(function (row) {

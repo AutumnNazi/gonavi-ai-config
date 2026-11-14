@@ -3,7 +3,8 @@
 把本机 AI 工具的供应商配置读出来，勾选后导入 GoNavi 的 AI 供应商列表。
 接口以 `docs/CONTRACT.md` 为唯一定义源（来源清单见其 §4.1）；cc-switch 与 magpie 的实测格式见 `docs/CC-SWITCH-FORMAT.md` 与 `docs/MAGPIE-FORMAT.md`。
 
-当前版本 `0.1.0`，已发布 <https://github.com/AutumnNazi/gonavi-ai-config/releases/tag/v0.1.0>（安装用该 Release 的 ZIP 资产；发布后的字节不可替换，修 bug 必须提升版本）。
+当前版本 `0.1.0`，已发布 <https://github.com/AutumnNazi/gonavi-ai-config/releases/tag/v0.1.0>（安装请用该 Release 的 ZIP 资产）。
+`v0.1.0` 在登记任何插件市场**之前**撤回过一次并重发（首发资产里带四处导入缺陷：长鉴权头被静默丢弃、取消后继续写入、判重把 URL 路径大小写合并、超长名称撑破整批结果），因此现资产与首发不同；进入市场之后同版本字节不再替换，修 bug 必须提升版本。
 
 ## 命令
 

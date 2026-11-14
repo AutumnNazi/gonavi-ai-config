@@ -134,6 +134,35 @@ test('导入后逐条回显 status 与 reason 的人话解释，并给出汇总�
   assert.match(notify.message, /导入完成/);
 });
 
+test('取消与请求头问题的原因码都给出可归因文案（cancelled / invalid_headers）', async () => {
+  const { page } = await loaded({
+    'sources.scan': () => scan(),
+    'import.apply': () => ({
+      imported: 1,
+      skipped: 0,
+      failed: 2,
+      resolved: 3,
+      cancelled: true,
+      items: [
+        { index: 0, name: '千刀', status: 'imported', providerId: 'provider-1', reason: '' },
+        { index: 1, name: '二', status: 'failed', providerId: '', reason: 'cancelled' },
+        { index: 2, name: '三', status: 'failed', providerId: '', reason: 'invalid_headers' },
+      ],
+    }),
+  });
+  page.byId('select-all').click();
+  page.byId('import').click();
+  await settle();
+  const result = page.byId('result');
+  const rows = result.findAll('.res-row');
+  // 取消必须明说「计数只覆盖取消前的部分、已导入的请重新扫描核对」，不能让人以为全处理完了。
+  assert.match(result.textContent, /本次导入中途被取消/);
+  assert.match(result.textContent, /重新扫描核对/);
+  assert.match(rows[1].textContent, /中途取消，这条还没轮到处理/);
+  assert.match(rows[2].textContent, /自定义请求头有无法落库的项/);
+  assert.doesNotMatch(result.textContent, /未识别的原因/);
+});
+
 test('宿主因请求头超限拒收时给出可归因文案（too_many_headers）', async () => {
   const { page } = await loaded({
     'sources.scan': () => scan(),

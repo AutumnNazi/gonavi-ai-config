@@ -133,6 +133,9 @@ type HostImportData struct {
 	Imported int              `json:"imported"`
 	Skipped  int              `json:"skipped"`
 	Failed   int              `json:"failed"`
+	// Cancelled 表示这一批在写入过程中被取消（超时、插件停用、页面关闭）：items 仍是完整的
+	// 逐条结果，取消后未处理的条目 reason 为 cancelled，页面据此提示「已写入的部分请重新扫描核对」。
+	Cancelled bool            `json:"cancelled,omitempty"`
 	Items    []HostImportItem `json:"items"`
 }
 

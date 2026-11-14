@@ -177,6 +177,39 @@ func TestScanConflictDetection(t *testing.T) {
 	}
 }
 
+// TestIdentityNormalizesOnlyCaseInsensitiveParts 判重身份必须与宿主同规则：
+// 名称大小写不敏感；地址「协议 + 主机名」大小写不敏感（大小写不敏感的部分），
+// 但**路径与查询保留原样**——/tenant/A 与 /tenant/a 是两个不同的供应商，
+// 整串小写会把它们合成一条，页面标冲突、宿主跳过，用户就永远导不进来。
+func TestIdentityNormalizesOnlyCaseInsensitiveParts(t *testing.T) {
+	same := [][2]string{
+		{"https://API.example.com/v1", "https://api.example.com/v1"},
+		{"https://api.example.com/v1/", "https://api.example.com/v1"},
+		{"HTTPS://api.example.com/v1", "https://api.example.com/v1"},
+		{"https://u:p@api.example.com/v1", "https://api.example.com/v1"},
+		{"https://api.example.com/v1#frag", "https://api.example.com/v1"},
+	}
+	for _, pair := range same {
+		if identity("站", pair[0]) != identity("站", pair[1]) {
+			t.Errorf("应判为同一条：%q vs %q", pair[0], pair[1])
+		}
+	}
+	different := [][2]string{
+		{"https://api.example.com/tenant/A", "https://api.example.com/tenant/a"},
+		{"https://api.example.com/v1?a=1", "https://api.example.com/v1?a=2"},
+		{"https://api.example.com/a", "https://api.example.com/b"},
+	}
+	for _, pair := range different {
+		if identity("站", pair[0]) == identity("站", pair[1]) {
+			t.Errorf("不应判为同一条（路径/查询大小写敏感）：%q vs %q", pair[0], pair[1])
+		}
+	}
+	// 名称大小写不敏感这条不能被改坏。
+	if identity("Tenant", "https://api.example.com/v1") != identity("tenant", "https://api.example.com/v1") {
+		t.Error("名称大小写不敏感")
+	}
+}
+
 // TestScanSingleSourceFailure 单个来源失败只写该来源的 error，其余来源照常返回。
 func TestScanSingleSourceFailure(t *testing.T) {
 	// 把一个目录当 cc-switch 库文件：探测得到，但只读打开必然失败。

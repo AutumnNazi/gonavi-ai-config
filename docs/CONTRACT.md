@@ -51,14 +51,19 @@
 | model | 否 | 0..200 |
 | models | 否 | 最多 64 项，每项 0..200 |
 | apiKey | 否 | 0..4096 |
-| headers | 否 | 最多 16 组，键值各 0..256；**超过 16 组按该条失败**（reason `too_many_headers`），不截断 |
+| headers | 否 | 最多 16 组，键 0..256、值 0..4096；**超过 16 组按该条失败**（reason `too_many_headers`），键为空/超长或值超长同样按该条失败（reason `invalid_headers`），都不静默丢弃 |
 | temperature | 否 | 0..2 |
 | overwrite | 否 | 默认 false |
 
 宿主落库规则：`type="custom"`、`authMode="api-key"`、`apiFormat` 取入参；`ID` 为空时由 `AISaveProvider` 生成（`provider-xxxxxxxx`）。
 
-去重身份（宿主侧防御性判重）：`(lower(trim(name)), baseUrl 去凭据/去 fragment、去掉尾部 "/" 后小写)`。去凭据是为了对齐导入侧（导入地址落库前已去凭据），否则既有供应商地址里带凭据时会被判成两条。
+去重身份（宿主侧防御性判重，插件侧判「冲突」用同一规则）：`(lower(trim(name)), 归一化地址)`。
+归一化地址 = 只小写**协议与主机名**（大小写不敏感的那部分），路径与查询**保留原样**，去凭据、去 fragment、去掉路径尾部 `/`。
+去凭据是为了对齐导入侧（导入地址落库前已去凭据），否则既有供应商地址里带凭据时会被判成两条；
+路径大小写必须保留，因为 `/tenant/A` 与 `/tenant/a` 是两个不同的供应商，整串小写会把它们合成一条、覆盖模式还会改错条目。
 命中且 `overwrite=false` → `skipped`，reason `duplicate`；命中且 `overwrite=true` → 复用原 ID 就地更新，`imported`。
+
+单条结果里的 `name` 是**有界回显**（截断并加省略号）：入参名字只受 MaxArgsBytes 约束，原样回显会让一条超长名字把整批结果撑破成 `result_too_large`，明细一起消失。
 
 返回（capability data）：
 
@@ -67,6 +72,7 @@
   "imported": 2,
   "skipped": 1,
   "failed": 0,
+  "cancelled": false,
   "items": [
     { "index": 0, "name": "千刀", "status": "imported", "providerId": "provider-8b190256", "reason": "" },
     { "index": 1, "name": "百倍", "status": "skipped", "providerId": "", "reason": "duplicate" }
@@ -74,13 +80,20 @@
 }
 ```
 
-status 枚举：`imported` | `skipped` | `failed`；reason 枚举：`duplicate` | `invalid_name` | `invalid_base_url` | `invalid_api_format` | `invalid_api_key` | `too_many_headers` | `save_failed`。
+status 枚举：`imported` | `skipped` | `failed`；reason 枚举：`duplicate` | `invalid_name` | `invalid_base_url` | `invalid_api_format` | `invalid_api_key` | `too_many_headers` | `invalid_headers` | `cancelled` | `save_failed`。
+
+**取消语义（v1.4）**：这一批被取消（宿主超时、插件停用、页面关闭）时，宿主**停止后续写入**，并把剩余条目逐条记成 `failed` / reason `cancelled`，顶层 `cancelled: true`。
+「一个请求条目一条结果」这条不因为取消而破——调用方要能知道前面哪几条真的落地了。能力侧用 `PartialResultOnCancel` 让这部分结果照常回给调用方，而不是统一变成一句 `internal`。
 
 （本枚举是**宿主人参**返回的取值，插件不得自造；插件侧自己的 `source_missing` 见第 4 节。）
 
 （`invalid_name` 为 2026-11 补充：条目名 trim 后为空或超过 128 字符时逐条记失败，不影响同批其他条目。消费方必须对未知 reason 回退到通用文案，不要用穷举 switch。）
 
 （`too_many_headers` 为 2026-11 补充：自定义请求头超过 16 组时该条失败。以前是静默保留前 16 组——头常承载鉴权，丢掉一个会产出一条看起来正常、实际调不通的供应商，且不留任何痕迹。）
+
+（`invalid_headers` 为 2026-11 补充：键为空/超长、或单个值超过 4096 字节时该条失败。此前 256 字节以上的值被静默跳过——`Authorization` 里的 JWT 动辄几百到上千字节，结果是「导入成功但鉴权头为空」，看起来成了、实际调不通。）
+
+（`cancelled` 为 2026-11 补充：取消后未处理的条目。此前处理函数不看 context，取消后照样把剩下的写完，而调用方只收到 `internal`——库里多了几条，界面却说整批失败。）
 
 失败返回宿主统一信封 `{"ok":false,"error":{"code":"..."}}`，code 枚举：`invalid_arguments` | `permission_denied` | `too_many_providers` | `internal` | `unknown_method`。
 单条失败不得中断整批：逐条落库，逐条记 status。

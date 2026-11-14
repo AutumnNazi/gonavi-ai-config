@@ -16,6 +16,9 @@ type importApplyResult struct {
 	Imported int                       `json:"imported"`
 	Skipped  int                       `json:"skipped"`
 	Failed   int                       `json:"failed"`
+	// Cancelled 透传宿主：这一批被取消时，items 里取消后未处理的条目 reason 为 cancelled，
+	// 页面据此提示「前面已写入的条目请重新扫描核对」。
+	Cancelled bool                     `json:"cancelled,omitempty"`
 	Items    []contract.HostImportItem `json:"items"`
 	Resolved int                       `json:"resolved"`
 }
@@ -88,6 +91,7 @@ func (a *App) handleImport(ctx context.Context, raw json.RawMessage) (any, error
 	}
 
 	resolved := len(emitted)
+	cancelled := false
 	if len(providers) > 0 {
 		arguments := contract.HostImportArguments{Providers: providers}
 		// 宿主能力的 MaxArgsBytes 是 256 KiB：超了会被它整批拒绝，用户看到的是「参数不合法」，
@@ -113,6 +117,7 @@ func (a *App) handleImport(ctx context.Context, raw json.RawMessage) (any, error
 		if err := json.Unmarshal(envelope.Data, &data); err != nil {
 			return nil, &goplugin.Error{Code: errInternal, Message: "host capability response is invalid"}
 		}
+		cancelled = data.Cancelled
 		// 宿主承诺「一条请求一条结果且 index 等于请求体下标」。对不上就报错，
 		// 不能把宿主下标当调用方下标透出去——那会让页面标错行。
 		if len(data.Items) != len(providers) {
@@ -136,7 +141,7 @@ func (a *App) handleImport(ctx context.Context, raw json.RawMessage) (any, error
 	}
 
 	// 计数按最终 items 重算，保证 imported+skipped+failed 与 items 永远自洽。
-	result := importApplyResult{Resolved: resolved, Items: items}
+	result := importApplyResult{Resolved: resolved, Cancelled: cancelled, Items: items}
 	for _, item := range items {
 		switch item.Status {
 		case "imported":

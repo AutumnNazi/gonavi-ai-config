@@ -319,6 +319,32 @@ func TestImportApplyRequestShape(t *testing.T) {
 	}
 }
 
+// TestImportApplyPassesThroughCancelled 宿主中途取消时必须原样透传：页面要靠它说明
+// 「计数只覆盖取消前处理过的部分」，否则用户会把没轮到的条目当成已经处理完。
+func TestImportApplyPassesThroughCancelled(t *testing.T) {
+	host := &fakeHost{response: json.RawMessage(`{"ok":true,"data":{"imported":1,"skipped":0,"failed":1,"cancelled":true,"items":[{"index":0,"name":"千刀","status":"imported","providerId":"provider-1","reason":""},{"index":1,"name":"二","status":"failed","providerId":"","reason":"cancelled"}]}}`)}
+	application, _ := newTestApp(t, host)
+
+	raw, err := application.handleImport(context.Background(), json.RawMessage(
+		`{"items":[{"sourceId":"cc-switch","sourceKey":"claude:c435024e-8384-417e-a2f4-8f8cd4c9c36e"},{"sourceId":"magpie","sourceKey":"multi-key"}]}`))
+	if err != nil {
+		t.Fatalf("handleImport: %v", err)
+	}
+	result, ok := raw.(importApplyResult)
+	if !ok {
+		t.Fatalf("返回类型 = %T", raw)
+	}
+	if !result.Cancelled {
+		t.Fatal("宿主取消标记必须透传")
+	}
+	if result.Imported != 1 || result.Failed != 1 || len(result.Items) != 2 {
+		t.Fatalf("取消时仍要逐条回报：%+v", result)
+	}
+	if result.Items[1].Reason != "cancelled" {
+		t.Fatalf("取消条目的原因必须保留：%+v", result.Items[1])
+	}
+}
+
 // TestImportApplyFailureEnvelope 宿主失败信封原样转交。
 func TestImportApplyFailureEnvelope(t *testing.T) {
 	host := &fakeHost{response: json.RawMessage(`{"ok":false,"error":{"code":"permission_denied"}}`)}

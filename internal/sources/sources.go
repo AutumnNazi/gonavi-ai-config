@@ -204,15 +204,18 @@ func dedupe(values []string) []string {
 }
 
 // identity 是判重身份，规则与契约 §2 的宿主去重身份一致：名称大小写不敏感、去空白；
-// 地址去凭据/去 fragment、去尾部 "/" 后小写。两边必须同规则——页面按它标「冲突」，
-// 宿主按它判「重复」，规则一旦不同，页面就会预判成「会新建」而宿主实际跳过。
+// 地址只小写协议与主机名（大小写不敏感的那部分），路径与查询原样保留，去凭据/fragment、
+// 去路径尾部 "/"。两边必须同规则——页面按它标「冲突」，宿主按它判「重复」，规则一旦不同，
+// 页面就会预判成「会新建」而宿主实际跳过。
+//
+// 路径大小写是区分供应商的：/tenant/A 与 /tenant/a 是两个地址，整串小写会把它们合成一条。
 func identity(name, baseURL string) string {
-	return strings.ToLower(strings.TrimSpace(name)) + "\x00" +
-		strings.ToLower(strings.TrimRight(normalizeIdentityBaseURL(baseURL), "/"))
+	return strings.ToLower(strings.TrimSpace(name)) + "\x00" + normalizeIdentityBaseURL(baseURL)
 }
 
-// normalizeIdentityBaseURL 去掉地址里的凭据与 fragment；解析失败就退回原文。
-// 与宿主的 normalizeImportBaseURL 同规则，保证两侧判重一致。
+// normalizeIdentityBaseURL 归一化判重用的地址：小写协议与主机名，去掉凭据与 fragment，
+// 去掉路径尾部的 "/"；路径与查询大小写原样保留。解析失败就退回原文。
+// 与宿主的 pluginAIProviderImportIdentityURL 同规则，保证两侧判重一致。
 func normalizeIdentityBaseURL(raw string) string {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
@@ -222,10 +225,12 @@ func normalizeIdentityBaseURL(raw string) string {
 	if err != nil {
 		return trimmed
 	}
-	if parsed.User == nil && parsed.Fragment == "" {
-		return trimmed
-	}
 	parsed.User = nil
 	parsed.Fragment = ""
+	parsed.Scheme = strings.ToLower(parsed.Scheme)
+	parsed.Host = strings.ToLower(parsed.Host)
+	if parsed.Path != "" {
+		parsed.Path = strings.TrimRight(parsed.Path, "/")
+	}
 	return parsed.String()
 }
